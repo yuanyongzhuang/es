@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import yyz.test.es.springBootEs.entity.es.EsBlog;
 import yyz.test.es.springBootEs.entity.mysql.MysqlBlog;
@@ -54,12 +57,15 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, MysqlBlog> implemen
 
     @Override
     public List<EsBlog> queryEsData(String title) {
+
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.should(QueryBuilders.matchPhraseQuery("title",title));
         boolQueryBuilder.should(QueryBuilders.matchPhraseQuery("content",title));
         String s = boolQueryBuilder.toString();
         System.out.println(s);
-        blogEsRepository.search(s);
-        return null;
+        Page<EsBlog> search = (Page<EsBlog>) blogEsRepository.search(boolQueryBuilder);
+
+        List<EsBlog> content = search.getContent();
+        return content;
     }
 }
